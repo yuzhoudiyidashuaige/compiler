@@ -2,89 +2,84 @@ D            [0-9]
 L            [a-zA-Z_]
 H            [a-fA-F0-9]
 E            ([Ee][+-]?{D}+)
-FS			 (f|F|l|L)
-IS			 (u|U|l|L)*
 
 %{
 #include <stdio.h>
 #include <iostream>
 #include <string>
-#include "treenode.h"
+#include "Ast.h"
 #include "parsing.hpp"
-
-#define SAVE_TOKEN yylval.string = new std::string(yytext, yyleng)
-#define TOKEN(t) (yylval.token = t)
 
 int column = 0;
 
-void count(void);
-void comment(void);
+void check_comment(void);
 %}
 
-%option yylineno
+/* automatically count line number */
+%option yylineno 
 
 %%
-    /******* comments *******/
-"/*"            { comment();               }
-"//"[^\n]*      { /*do nothing*/ }
+    /* eat comments */
+"/*"            { check_comment();}
+"//"[^\n]*      { } /* eat // */
 
-    /******* keywords *******/
-"break"         { count(); return TOKEN(BREAK);    }
-"else"          { count(); return TOKEN(ELSE);     }
-"if"            { count(); return TOKEN(IF);       }
-"return"        { count(); return TOKEN(RETURN);   }
-"while"         { count(); return TOKEN(WHILE);    }
-
-    /******* identifiers *******/
-{L}({L}|{D})*            { count(); yylval.string = new std::string(yytext, yyleng); return IDENTIFIER;}
-
-    /******* constant int *******/
-0[xX]{H}+                { count(); yylval.string = new std::string(yytext, yyleng); return CONSTANT_INT; /* hexadecimal */ }
-0[0-7]*                  { count(); yylval.string = new std::string(yytext, yyleng); return CONSTANT_INT; /* octal */       }
-[1-9]{D}*                { count(); yylval.string = new std::string(yytext, yyleng); return CONSTANT_INT; /* decimal */     }
-    /******* constant char/string *******/
-\'.\'|\'\\.\'            { count(); yylval.string = new std::string(yytext, yyleng); return CONSTANT_CHAR; /* character */  }
-\"(\\.|[^"\\])*\"        { count(); yylval.string = new std::string(yytext, yyleng); return CONSTANT_STRING; /* string */    }
-
-    /******* constant float *******/
-{D}+{E}                  { count(); yylval.string = new std::string(yytext, yyleng); return CONSTANT_FLOAT; }
-{D}*"."{D}+{E}?          { count(); yylval.string = new std::string(yytext, yyleng); return CONSTANT_FLOAT; }
-{D}+"."{D}*{E}?          { count(); yylval.string = new std::string(yytext, yyleng); return CONSTANT_FLOAT; }
+    /* eat keywords */
+"while"         {  return yylval.token = WHILE;    }
+"break"         {  return yylval.token = BREAK;    }
+"if"            {  return yylval.token = IF;       }
+"else"          {  return yylval.token = ELSE;     }
+"return"        {  return yylval.token = RETURN;   }
 
 
-    /******* operators *******/
-"&&"            { count(); return TOKEN(AND); }
-"||"            { count(); return TOKEN(OR); }
-"<="            { count(); return TOKEN(LEQ); }
-">="            { count(); return TOKEN(GEQ); }
-"=="            { count(); return TOKEN(EQU); }
-"!="            { count(); return TOKEN(NEQ); }
-";"             { count(); return TOKEN(';'); }
-"{"             { count(); return TOKEN('{'); }
-"}"             { count(); return TOKEN('}'); }
-","             { count(); return TOKEN(','); }
-":"             { count(); return TOKEN(':'); }
-"="             { count(); return TOKEN('='); }
-"("             { count(); return TOKEN('('); }
-")"             { count(); return TOKEN(')'); }
-"["             { count(); return TOKEN('['); }
-"]"             { count(); return TOKEN(']'); }
-"."             { count(); return TOKEN('.'); }
-"&"             { count(); return TOKEN(GAD); }
-"!"             { count(); return TOKEN(NOT); }
-"~"             { count(); return TOKEN('~'); }
-"-"             { count(); return TOKEN(MINUS); }
-"+"             { count(); return TOKEN(PLUS); }
-"*"             { count(); return TOKEN(MUL); }
-"/"             { count(); return TOKEN(DIV); }
-"%"             { count(); return TOKEN('%'); }
-"<"             { count(); return TOKEN(LESST); }
-">"             { count(); return TOKEN(GREATERT); }
-"^"             { count(); return TOKEN('^'); }
-"|"             { count(); return TOKEN('|'); }
-"?"             { count(); return TOKEN('?'); }
+    /* eat identifiers */
+{L}({L}|{D})*            {   yylval.string = new std::string(yytext, yyleng); return IDENTIFIER;}
 
-[ \t\v\n\f]     { count(); }
+    /* eat constants */
+0[xX]{H}+                {   yylval.string = new std::string(yytext, yyleng); return CONSTANT_INT; /* hexadecimal */ }
+0[0-7]*                  {   yylval.string = new std::string(yytext, yyleng); return CONSTANT_INT; /* octal       */ }
+[1-9]{D}*                {   yylval.string = new std::string(yytext, yyleng); return CONSTANT_INT; /* decimal     */ }
+
+\'.\'|\'\\.\'            {   yylval.string = new std::string(yytext, yyleng); return CONSTANT_CHAR;   /* character */  }
+\"(\\.|[^"\\])*\"        {   yylval.string = new std::string(yytext, yyleng); return CONSTANT_STRING; /* string    */  }
+
+
+{D}+{E}                  {   yylval.string = new std::string(yytext, yyleng); return CONSTANT_FLOAT; }
+{D}*"."{D}+{E}?          {   yylval.string = new std::string(yytext, yyleng); return CONSTANT_FLOAT; }
+{D}+"."{D}*{E}?          {   yylval.string = new std::string(yytext, yyleng); return CONSTANT_FLOAT; }
+
+
+    /* eat operators */
+"&&"            {  return yylval.token = AND; }
+"||"            {  return yylval.token = OR;  }
+"<="            {  return yylval.token = LEQ; }
+">="            {  return yylval.token = GEQ; }
+"=="            {  return yylval.token = EQU; }
+"!="            {  return yylval.token = NEQ; }
+";"             {  return yylval.token = ';'; }
+"{"             {  return yylval.token = '{'; }
+"}"             {  return yylval.token = '}'; }
+","             {  return yylval.token = ','; }
+":"             {  return yylval.token = ':'; }
+"="             {  return yylval.token = '='; }
+"("             {  return yylval.token = '('; }
+")"             {  return yylval.token = ')'; }
+"["             {  return yylval.token = '['; }
+"]"             {  return yylval.token = ']'; }
+"."             {  return yylval.token = '.'; }
+"&"             {  return yylval.token = GETAD; }
+"!"             {  return yylval.token = NOT; }
+"~"             {  return yylval.token = '~'; }
+"-"             {  return yylval.token = MINUS; }
+"+"             {  return yylval.token = PLUS; }
+"*"             {  return yylval.token = MUL; }
+"/"             {  return yylval.token = DIV; }
+"%"             {  return yylval.token = '%'; }
+"<"             {  return yylval.token = LT; }
+">"             {  return yylval.token = GT; }
+"|"             {  return yylval.token = '|'; }
+
+
+[ \t\v\n\f]     { }
 .               { printf("unknown token : %s in line: %d\n", yytext, yylineno); }
 
 %%
@@ -95,31 +90,16 @@ int yywrap(void)
 }
 
 
-void comment(void)
+void check_comment(void)
 {
-    column = 0;
-    char c, prev = 0;
-
-    while (std::cin >> c)      /* (EOF maps to 0) */
+    char ch, lastch;
+    
+    while (std::cin >> ch)      //find */
     {
-        if (c == '/' && prev == '*')
+        if (ch == '/' && lastch == '*')
             return;
-        prev = c;
+        lastch = ch;
     }
-    printf("unterminated comment");
+    printf("illegal comment");
 }
 
-void count(void)
-{
-    int i;
-
-    for (i = 0; yytext[i] != '\0'; i++)
-        if (yytext[i] == '\n')
-            column = 0;
-        else if (yytext[i] == '\t')
-            column += 4 - (column % 4);
-        else
-            column++;
-
-
-}
