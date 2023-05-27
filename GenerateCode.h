@@ -26,21 +26,20 @@
 
 using namespace std;
 
-extern llvm::LLVMContext GlobalContext; //定义全局context
-extern llvm::IRBuilder<> myBuilder; //定义全局IRbuilder
+extern llvm::LLVMContext GlobalContext; //define global context
+extern llvm::IRBuilder<> myBuilder; //define global IRbuilder
 
-struct Symboltable{ 
-    map<string, llvm::Value*> local_var; //局部变量map
-    map<string, llvm::Type*> local_var_type;//局部变量string-llvm::type的map
+struct Symboltable{
+    map<string, llvm::Value*> local_var; //map of local var's value
+    map<string, llvm::Type*> local_var_type;//map of local var's type
 };
 
 
 class Environment{
 public:
-    vector<Symboltable *> Symboltable_stack; //符号栈
-    llvm::Module *myModule; 
+    vector<Symboltable *> Symboltable_stack; //Stack of symbol tables
+    llvm::Module *myModule;
     vector<llvm::Function*> keyfunctions;
-    //llvm::Function *printf,*scanf, *gets;
     llvm::Function* Caller_function;
     llvm::BasicBlock* returnaddr;
     llvm::Value* returnvalue;
@@ -48,14 +47,12 @@ public:
     bool Return_or_break; //if return or break, it should stop generate IR code and jump to next block
     map<string, llvm::Value*>& Get_localvar_values();
     map<string, llvm::Type*>& Get_localvar_types();
-    
+   
     Environment();
     void PushSymboltable();
     void PopSymboltable();
     llvm::Value* Get_variable_value(string variable);
-    vector<llvm::Function*> Getkeyfunctions(); //得到llvm形式的printf函数
-    // llvm::Function* getScanf();  //得到llvm形式的scanf函数
-    // llvm::Function* getGets();   //得到llvm形式的gets函数
+    vector<llvm::Function*> Getkeyfunctions(); //get llvm form key functions
     void run(BlockNode* rootblock);   //From top to bottom parsing
 
 };
