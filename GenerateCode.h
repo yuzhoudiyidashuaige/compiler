@@ -1,3 +1,5 @@
+#ifndef _GENERATECODE_H_
+#define _GENERATECODE_H_
 #include <llvm/IR/BasicBlock.h>
 #include <llvm/IR/Value.h>
 #include <map>
@@ -27,9 +29,9 @@
 using namespace std;
 
 extern llvm::LLVMContext GlobalContext; //define global context
-extern llvm::IRBuilder<> myBuilder; //define global IRbuilder
+extern llvm::IRBuilder<> MyIRBuilder; //define global IRbuilder
 
-struct Symboltable{
+struct Symboltable{ 
     map<string, llvm::Value*> local_var; //map of local var's value
     map<string, llvm::Type*> local_var_type;//map of local var's type
 };
@@ -38,7 +40,7 @@ struct Symboltable{
 class Environment{
 public:
     vector<Symboltable *> Symboltable_stack; //Stack of symbol tables
-    llvm::Module *myModule;
+    llvm::Module *myModule; 
     vector<llvm::Function*> keyfunctions;
     llvm::Function* Caller_function;
     llvm::BasicBlock* returnaddr;
@@ -47,12 +49,14 @@ public:
     bool Return_or_break; //if return or break, it should stop generate IR code and jump to next block
     map<string, llvm::Value*>& Get_localvar_values();
     map<string, llvm::Type*>& Get_localvar_types();
-   
+    
     Environment();
     void PushSymboltable();
     void PopSymboltable();
     llvm::Value* Get_variable_value(string variable);
     vector<llvm::Function*> Getkeyfunctions(); //get llvm form key functions
-    void run(BlockNode* rootblock);   //From top to bottom parsing
+    void run(Block* rootblock);   //From top to bottom parsing
 
 };
+
+#endif 

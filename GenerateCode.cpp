@@ -11,7 +11,7 @@
 #include "GenerateCode.h"
 
 llvm::LLVMContext GlobalContext; 
-llvm::IRBuilder<> myBuilder(GlobalContext); //IRbuilder
+llvm::IRBuilder<> MyIRBuilder(GlobalContext); //IRbuilder
 
 
 Environment::Environment(){
@@ -54,13 +54,13 @@ vector<llvm::Function *> Environment::Getkeyfunctions()
 {
     vector<llvm::Function *> keyfunctions;
     /*****printf*****/
-    vector<llvm::Type*> printf_arg_types;printf_arg_types.push_back(myBuilder.getInt8PtrTy()); //according to zhihu examples
-    llvm::FunctionType* printf_type = llvm::FunctionType::get(myBuilder.getInt32Ty(),printf_arg_types,true);
+    vector<llvm::Type*> printf_arg_types;printf_arg_types.push_back(MyIRBuilder.getInt8PtrTy()); //according to zhihu examples
+    llvm::FunctionType* printf_type = llvm::FunctionType::get(MyIRBuilder.getInt32Ty(),printf_arg_types,true);
     llvm::Function* printf_func = llvm::Function::Create(printf_type,llvm::Function::ExternalLinkage,llvm::Twine("printf"),this->myModule);
     printf_func->setCallingConv(llvm::CallingConv::C);
     keyfunctions.push_back(printf_func);
 
-    llvm::FunctionType* scanf_or_gets_type = llvm::FunctionType::get(myBuilder.getInt32Ty(),true);
+    llvm::FunctionType* scanf_or_gets_type = llvm::FunctionType::get(MyIRBuilder.getInt32Ty(),true);
     /*****scanf*****/
     llvm::Function* scanf_func = llvm::Function::Create(scanf_or_gets_type,llvm::Function::ExternalLinkage,llvm::Twine("scanf"),this->myModule);
     scanf_func->setCallingConv(llvm::CallingConv::C);
@@ -74,7 +74,7 @@ vector<llvm::Function *> Environment::Getkeyfunctions()
     return keyfunctions;
 }
 
-void Environment::run(BlockNode* rootblock){ 
+void Environment::run(Block* rootblock){ 
     rootblock->GenerateCoder(*this);    //generate IR code iteratively
     llvm::verifyModule(*this->myModule, &llvm::outs());
     std::error_code EC;
