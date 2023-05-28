@@ -17,6 +17,7 @@ void check_comment(void);
 
 /* automatically count line number */
 %option yylineno 
+%option never-interactive
 
 %%
     /* eat comments */
@@ -53,30 +54,29 @@ void check_comment(void);
 "||"            {  return yylval.token = OR;  }
 "<="            {  return yylval.token = LEQ; }
 ">="            {  return yylval.token = GEQ; }
-"=="            {  return yylval.token = EQU; }
+"=="            {  return yylval.token = EQ; }
 "!="            {  return yylval.token = NEQ; }
-";"             {  return yylval.token = ';'; }
-"{"             {  return yylval.token = '{'; }
-"}"             {  return yylval.token = '}'; }
-","             {  return yylval.token = ','; }
-":"             {  return yylval.token = ':'; }
-"="             {  return yylval.token = '='; }
-"("             {  return yylval.token = '('; }
-")"             {  return yylval.token = ')'; }
-"["             {  return yylval.token = '['; }
-"]"             {  return yylval.token = ']'; }
-"."             {  return yylval.token = '.'; }
+";"             {  return yylval.token = SEMI; }
+"{"             {  return yylval.token = LBRACE; }
+"}"             {  return yylval.token = RBRACE; }
+","             {  return yylval.token = COMMA; }
+":"             {  return yylval.token = COLON; }
+"="             {  return yylval.token = ASSIGN; }
+"("             {  return yylval.token = LPAREN; }
+")"             {  return yylval.token = RPAREN; }
+"["             {  return yylval.token = LBRACKET; }
+"]"             {  return yylval.token = RBRACKET; }
+"."             {  return yylval.token = DOT; }
 "&"             {  return yylval.token = GETAD; }
 "!"             {  return yylval.token = NOT; }
-"~"             {  return yylval.token = '~'; }
+"~"             {  return yylval.token = BNOT; }
 "-"             {  return yylval.token = MINUS; }
 "+"             {  return yylval.token = PLUS; }
 "*"             {  return yylval.token = MUL; }
 "/"             {  return yylval.token = DIV; }
-"%"             {  return yylval.token = '%'; }
+"%"             {  return yylval.token = MOD; }
 "<"             {  return yylval.token = LT; }
 ">"             {  return yylval.token = GT; }
-"|"             {  return yylval.token = '|'; }
 
 
 [ \t\v\n\f]     { }
