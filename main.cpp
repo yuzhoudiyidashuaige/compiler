@@ -4,29 +4,22 @@
 #include <llvm/Support/TargetSelect.h>
 
 extern int yyparse(void);
-extern BlockNode* programBlock;
+extern Block* programBlock;
 
 int main(){
     yyparse();
-    //BlockNode* Root;
     Environment* generator = new Environment();
-
-    llvm::InitializeNativeTarget();
+    llvm::InitializeNativeTarget();     //  according to the doc
     llvm::InitializeNativeTargetAsmParser();
     llvm::InitializeNativeTargetAsmPrinter();
 
-    cout<<"program begin"<<endl;
-
-    // jsonize AST
-    string jsonString("");
-    programBlock->generateJson(jsonString);
+    std::string jsonString = "";
+    programBlock->json(jsonString); //generate Json iteratively
     ofstream fout;
     fout.open("./AST.json");
     fout << jsonString;
     fout.close();
 
-    generator->run(programBlock);
-
+    generator->run(programBlock);//generate IR code
     return 0;
-
 }
